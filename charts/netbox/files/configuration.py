@@ -54,6 +54,7 @@ CORS_ORIGIN_REGEX_WHITELIST = []
 DATABASES = {}
 EMAIL = {}
 REDIS = {}
+PLUGINS = []
 
 _load_yaml()
 
@@ -73,3 +74,13 @@ if "SENTINELS" in REDIS["caching"]:
     REDIS["caching"]["SENTINELS"] = [tuple(x.split(r":")) for x in REDIS["caching"]["SENTINELS"]]
 if ALLOWED_HOSTS_INCLUDES_POD_ID:
     ALLOWED_HOSTS.append(os.getenv("POD_IP"))
+
+# Bootstrap netbox branching plugin
+NETBOX_BRANCHING_PLUGIN = "netbox_branching"
+if NETBOX_BRANCHING_PLUGIN in PLUGINS:
+    from netbox_branching.utilities import DynamicSchemaDict
+
+    DATABASES = DynamicSchemaDict(DATABASES)
+    DATABASE_ROUTERS = [
+        'netbox_branching.database.BranchAwareRouter',
+    ]
